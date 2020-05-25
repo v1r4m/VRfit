@@ -3,11 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Text.RegularExpressions;
 using System.IO;
+using RhythmTool;
 
 public class NoteSpawner : MonoBehaviour
 {
     public GameObject note, duckNote, footNote;
     MusicPlayer musicPlayer;
+    public RhythmEventProvider eventProvider;
+//    public string path;
+    public AudioImporter importer;
+    public RhythmAnalyzer analyzer;
+    public RhythmData rhythmData;
+    public RhythmPlayer rhythmPlayer;
+    private AudioSource audioSource;
+
+    private float prevTime;
+    private List<Beat> beats;
+
 
     public Transform zero, two;
     public TextAsset inputCsv;
@@ -16,23 +28,44 @@ public class NoteSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        musicPlayer = GetComponent<MusicPlayer>();
-        
-       AutoConstruct = true;
+
+
+        AutoConstruct = true;
     }
     public float lastNoteSpawned = 0;
 
+    private void OnBeat(Beat beat)
+    {
+        UnityEngine.Debug.Log("A beat occurred at " + beat.timestamp);
+    }
+
+    void OnDestroy()
+    {
+        eventProvider.Unregister<Beat>(OnBeat);
+    }
+
     // Update is called once per frame
     void Update()
-    {   
-        if(AutoConstruct)
-            while (lastNoteSpawned-30 < musicPlayer.CurrentBeat)
+    {
+        float time = audioSource.time;
+        beats.Clear();
+        rhythmData.GetFeatures<Beat>(beats, prevTime, time);
+        foreach(Beat beat in beats)
+        {
+            UnityEngine.Debug.Log("A beat occured at " + beat.timestamp);
+            SpawnRandomNote();
+            lastNoteSpawned++;
+        }
+
+/*        if (AutoConstruct)
+        {
+            while (lastNoteSpawned - 30 < musicPlayer.CurrentBeat)
             {
                 if (Random.Range(0, 100) > 50) SpawnRandomFootNote();
                 if (Random.Range(0, 100) > 70) SpawnRandomNote();
                 lastNoteSpawned++;
             }
-        
+        }*/
 
     }
     void SpawnRandomFootNote()
@@ -58,6 +91,20 @@ public class NoteSpawner : MonoBehaviour
         }
 
         n.Init(lastNoteSpawned, rnd, musicPlayer, 1, handSide, hookSide);
+    }
+
+    void Awake()
+    {
+        beats = new List<Beat>();
+        musicPlayer = GetComponent<MusicPlayer>();
+        eventProvider.Register<Beat>(OnBeat);
+        audioSource = GetComponent<AudioSource>();
+        rhythmPlayer = GetComponent<RhythmPlayer>();
+    }
+
+    private void OnLoaded(AudioClip clip)
+    {
+        analyzer.Analyze(clip);
     }
 
     void SpawnRandomNote()
