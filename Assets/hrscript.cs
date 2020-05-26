@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using SocketIOClient;
 using System.Diagnostics;
+using TMPro;
 
 public class hrscript : MonoBehaviour
     {
@@ -16,7 +17,7 @@ public class hrscript : MonoBehaviour
     // Start is called before the first frame update
     //        string url = "http://127.0.0.1:999/";
     //       public static Client Socket { get; private set; }
-    public Text txt;
+    private TMP_Text txt;
 
         /*        void Awake()
                 {
@@ -50,8 +51,8 @@ public class hrscript : MonoBehaviour
                     {
                         Debug.Log(data.Json.args[0]);
                     });*/
-        txt = GameObject.Find("HRtext").GetComponent<Text>();
-        SocketManager.Socket.On("hra", (data) =>
+        txt = GameObject.Find("HRtext").GetComponent<TMP_Text>();
+        SocketManager.Socket.On("hr", (data) =>
                     {
                         UnityEngine.Debug.Log(data.Json.args[0]);
 //                        txt.text = "heart rate changed: " + data.Json.args[0];

@@ -100,7 +100,7 @@ public class NoteSpawner : MonoBehaviour
         //        rhythmPlayer.Reset += OnReset;
         foreach(Chroma chroma in chromaFeatures) //여기서생성
         {
-            UnityEngine.Debug.Log("chroma features occured at " + chroma.timestamp);
+//            UnityEngine.Debug.Log("chroma features occured at " + chroma.timestamp);
 
             //chroma : length, note timestamp
             SpawnRandomNote(chroma.timestamp);

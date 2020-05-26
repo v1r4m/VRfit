@@ -3,7 +3,7 @@ var usb = require('usb');
 const bluetooth = require("webbluetooth").bluetooth;
 var app = require('express')();
 var server = require('http').createServer(app);
-var io = require("socket.io").listen(999);
+var io = require("socket.io").listen(999);``
 
 
 io.sockets.on("connection", function(socket){
@@ -39,7 +39,7 @@ async function main()
       await miband.showNotification('message');
       console.log('Heart Rate Monitor (single-shot)');
       console.log('Result:', await miband.hrmRead());
-      for(var i = 0; i<5; i ++)
+      for(var i = 0; i<50; i ++)
       {
         await delay(1000);
 //        console.log('Result:', await miband.hrmRead());
