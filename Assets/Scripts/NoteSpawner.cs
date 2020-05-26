@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Text.RegularExpressions;
 using System.IO;
 using RhythmTool;
+using System.Diagnostics;
 
 public class NoteSpawner : MonoBehaviour
 {
@@ -19,7 +20,12 @@ public class NoteSpawner : MonoBehaviour
 
     private float prevTime;
     private List<Beat> beats;
+    private List<Chroma> chromaFeatures;
 
+    private List<Note> randomNote;
+
+    public static float hr;
+    public float hrthres = 50;
 
     public Transform zero, two;
     public TextAsset inputCsv;
@@ -47,25 +53,20 @@ public class NoteSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float time = audioSource.time;
-        beats.Clear();
-        rhythmData.GetFeatures<Beat>(beats, prevTime, time);
-        foreach(Beat beat in beats)
+        float time = musicPlayer.CurrentBeat;
+        if (hr < hrthres)
         {
-            UnityEngine.Debug.Log("A beat occured at " + beat.timestamp);
-            SpawnRandomNote();
-            lastNoteSpawned++;
+            int count = 0;
+            foreach (Note note in randomNote)
+            {
+                if(count%4==0)
+                {
+                    Destroy(note.gameObject);
+                    count = count + 1;
+                }
+            }
         }
 
-/*        if (AutoConstruct)
-        {
-            while (lastNoteSpawned - 30 < musicPlayer.CurrentBeat)
-            {
-                if (Random.Range(0, 100) > 50) SpawnRandomFootNote();
-                if (Random.Range(0, 100) > 70) SpawnRandomNote();
-                lastNoteSpawned++;
-            }
-        }*/
 
     }
     void SpawnRandomFootNote()
@@ -95,19 +96,71 @@ public class NoteSpawner : MonoBehaviour
 
     void Awake()
     {
+        analyzer.Initialized += OnInitialized;
+
+
         beats = new List<Beat>();
+        chromaFeatures = new List<Chroma>();
+        eventProvider.Register<Onset>(OnOnset);
         musicPlayer = GetComponent<MusicPlayer>();
         eventProvider.Register<Beat>(OnBeat);
         audioSource = GetComponent<AudioSource>();
         rhythmPlayer = GetComponent<RhythmPlayer>();
+
+        rhythmData.GetIntersectingFeatures<Chroma>(chromaFeatures,0,180);
+
+        UnityEngine.Debug.Log(chromaFeatures);
+        //        rhythmPlayer.Reset += OnReset;
+        foreach(Chroma chroma in chromaFeatures) //여기서생성
+        {
+            UnityEngine.Debug.Log("chroma features occured at " + chroma.timestamp);
+
+            //chroma : length, note timestamp
+            SpawnRandomNote(chroma.timestamp);
+        }
+
     }
 
+    private void OnInitialized(RhythmData rhythmData)
+    {
+        //Start playing the song.
+        rhythmPlayer.Play();
+    }
+    private void OnOnset(Onset onset) //안쓰는거
+    {
+        UnityEngine.Debug.Log("on onset");
+        //Clear any previous Chroma features.
+        chromaFeatures.Clear();
+
+        //Find Chroma features that intersect the Onset's timestamp.
+        rhythmPlayer.rhythmData.GetIntersectingFeatures(chromaFeatures, onset.timestamp, onset.timestamp);
+
+        //Instantiate a line to represent the Onset and Chroma feature.
+        foreach (Chroma chroma in chromaFeatures)
+        {
+            if (onset.strength > 1)
+            {
+                SpawnRandomNote(onset.timestamp);
+                UnityEngine.Debug.Log("called" + onset.timestamp);
+//CreateLine(onset.timestamp, -2 + (float)chroma.note * .1f, 0.3f, Color.blue, onset.strength / 10);
+            }
+            UnityEngine.Debug.Log(onset.strength);
+        }
+
+        if (chromaFeatures.Count > 0)
+//            lastNote = chromaFeatures[chromaFeatures.Count - 1].note;
+
+        //If no Chroma Feature was found, use the last known Chroma feature's note.
+        if (chromaFeatures.Count == 0)
+            SpawnRandomNote(onset.timestamp);
+//        CreateLine(onset.timestamp, -2 + (float)lastNote * .1f, 0.3f, Color.blue, onset.strength / 10);
+    }
     private void OnLoaded(AudioClip clip)
     {
         analyzer.Analyze(clip);
     }
 
-    void SpawnRandomNote()
+    void SpawnRandomNote(float beattime)
     {
         var n = Instantiate(note, Vector3.zero, Quaternion.identity).GetComponent<Note>();
 
@@ -130,7 +183,8 @@ public class NoteSpawner : MonoBehaviour
             }
         }
 
-        n.Init(lastNoteSpawned, rnd, musicPlayer, 1, handSide, hookSide);
+        n.Init(beattime*2, rnd, musicPlayer, 1, handSide, hookSide);
         n.reqStrength = 0;
+        randomNote.Add(n);
     }
 }
