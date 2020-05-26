@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using RhythmTool;
 using System.Diagnostics;
+using System.Text;
 
 public class NoteSpawner : MonoBehaviour
 {
@@ -17,28 +18,21 @@ public class NoteSpawner : MonoBehaviour
     public RhythmData rhythmData;
     public RhythmPlayer rhythmPlayer;
     private AudioSource audioSource;
+    public float lookaheadtime;
 
     private float prevTime;
     private List<Beat> beats;
-    private List<Chroma> chromaFeatures;
+    private List<Onset> onsetFeatures;
 
-    private List<Note> randomNote;
+    private List<Note> randomNote = new List<Note>();
 
     public static float hr;
-    public float hrthres = 50;
+    public float hrthres = 120;
 
     public Transform zero, two;
     public TextAsset inputCsv;
 
-    bool AutoConstruct = false;
-    // Start is called before the first frame update
-    void Start()
-    {
-
-
-        AutoConstruct = true;
-    }
-    public float lastNoteSpawned = 0;
+    bool AutoConstruct = true;
 
     private void OnBeat(Beat beat)
     {
@@ -50,104 +44,91 @@ public class NoteSpawner : MonoBehaviour
         eventProvider.Unregister<Beat>(OnBeat);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        float time = musicPlayer.CurrentBeat;
-
-    }
-    void SpawnRandomFootNote()
-    {
-        var n = Instantiate(footNote, Vector3.zero, Quaternion.identity).GetComponent<FootNote>();
-        Vector2 rnd = new Vector2(Random.Range(-.7f, .7f), 0);
-        HandSide handSide = HandSide.any;
-        float? hookSide = null;
-        if (Random.Range(0, 20) < 1)
-            handSide = HandSide.left;
-        else if (Random.Range(0, 19) < 1)
-            handSide = HandSide.right;
-        else
-        {
-            switch (Random.Range(0, 20))
-            {
-                case 0: hookSide = 0; break;
-                case 1: hookSide = 90; break;
-                case 2: hookSide = 270; break;
-                case 3: hookSide = 180; break;
-                default: hookSide = null; break;
-            }
-        }
-
-        n.Init(lastNoteSpawned, rnd, musicPlayer, 1, handSide, hookSide);
-    }
-
+    public float targetSPN = 1;
+    public float hrWeight = 0.001f;
+    float? lastDelta = null;
+    float? avgDelta = null;
+    int scannedUntil = 0;
+    TMPro.TMP_Text txt;
     void Awake()
     {
-        analyzer.Initialized += OnInitialized;
-
-
+        txt = GameObject.Find("HRText").GetComponent<TMPro.TMP_Text>();
         beats = new List<Beat>();
-        chromaFeatures = new List<Chroma>();
-        eventProvider.Register<Onset>(OnOnset);
+        onsetFeatures = new List<Onset>();
         musicPlayer = GetComponent<MusicPlayer>();
-        eventProvider.Register<Beat>(OnBeat);
         audioSource = GetComponent<AudioSource>();
         rhythmPlayer = GetComponent<RhythmPlayer>();
 
-        rhythmData.GetIntersectingFeatures<Chroma>(chromaFeatures,0,180);
+        rhythmData.GetIntersectingFeatures(onsetFeatures,0,180);
+        rhythmData.GetIntersectingFeatures(beats, 0, 180);
 
-        UnityEngine.Debug.Log(chromaFeatures);
-        //        rhythmPlayer.Reset += OnReset;
-        foreach(Chroma chroma in chromaFeatures) //여기서생성
+        UnityEngine.Debug.Log(onsetFeatures);
+
+        
+        foreach (var onset in onsetFeatures) //여기서생성
         {
-//            UnityEngine.Debug.Log("chroma features occured at " + chroma.timestamp);
-
-            //chroma : length, note timestamp
-            SpawnRandomNote(chroma.timestamp);
+            SpawnRandomNote(onset.timestamp);
         }
 
-    }
 
-    private void OnInitialized(RhythmData rhythmData)
-    {
-        //Start playing the song.
         rhythmPlayer.Play();
     }
-    private void OnOnset(Onset onset) //안쓰는거
+    StringBuilder sb = new StringBuilder("hr, targetSPN(difficulty), avgDelta (real difficulty), hrthres\n");
+
+    string threeFloat(float f)
+    { return string.Format("{0:f3}", f); }
+
+
+    void FixedUpdate()
     {
-        UnityEngine.Debug.Log("on onset");
-        //Clear any previous Chroma features.
-        chromaFeatures.Clear();
+        txt.text = "heart rate: " + hr  + "\nTarget HR = " + hrthres;
+        txt.text += "\nTarget Difficulty : " + threeFloat(targetSPN) + "\n<sub>Real Difficulty : " + threeFloat(avgDelta??0);
+        txt.text += "\nAdjusted Difficulty : " + threeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
+        float time = musicPlayer.CurrentBeat;
+        targetSPN -= (hrthres - hr) * hrWeight * Time.deltaTime;
+        if (targetSPN < 0)
+            targetSPN = 0;
+        if (targetSPN > 10)
+            targetSPN = 10;
+        while (randomNote[scannedUntil] == null)
+            scannedUntil++;
 
-        //Find Chroma features that intersect the Onset's timestamp.
-        rhythmPlayer.rhythmData.GetIntersectingFeatures(chromaFeatures, onset.timestamp, onset.timestamp);
-
-        //Instantiate a line to represent the Onset and Chroma feature.
-        foreach (Chroma chroma in chromaFeatures)
+        while (randomNote[scannedUntil].beat < time + lookaheadtime && scannedUntil + 2 < randomNote.Count)
         {
-            if (onset.strength > 1)
+            float noteDelta = randomNote[scannedUntil + 1].beat - randomNote[scannedUntil].beat;
+            float noteDeltaifDropped = randomNote[scannedUntil + 2].beat - randomNote[scannedUntil].beat;
+
+            float adjusted = targetSPN + (targetSPN - avgDelta ?? targetSPN);
+
+            float DeltaTarget = Mathf.Abs(adjusted - noteDelta);
+            float ifDropDeltaTarget = Mathf.Abs(adjusted - noteDeltaifDropped);
+
+            if (DeltaTarget > ifDropDeltaTarget)
             {
-                SpawnRandomNote(onset.timestamp);
-                UnityEngine.Debug.Log("called" + onset.timestamp);
-//CreateLine(onset.timestamp, -2 + (float)chroma.note * .1f, 0.3f, Color.blue, onset.strength / 10);
+                Destroy(randomNote[scannedUntil + 1].gameObject);
+                randomNote.RemoveAt(scannedUntil + 1);
+                DeltaTarget = ifDropDeltaTarget;
+                UnityEngine.Debug.Log("Dropped one!");
+                continue;
             }
-            UnityEngine.Debug.Log(onset.strength);
+
+            lastDelta = DeltaTarget;
+            UnityEngine.Debug.Log("ad = " + avgDelta);
+            avgDelta = (avgDelta ?? DeltaTarget) * 0.5f + noteDelta * 0.5f; // LPS
+            UnityEngine.Debug.Log("ad = " + avgDelta + " and delt = " + noteDelta);
+            sb.Append(string.Format("{0},{1},{2},{3}\n", hr, targetSPN/1, avgDelta ?? 0, hrthres));
+            scannedUntil++;
         }
 
-        if (chromaFeatures.Count > 0)
-//            lastNote = chromaFeatures[chromaFeatures.Count - 1].note;
 
-        //If no Chroma Feature was found, use the last known Chroma feature's note.
-        if (chromaFeatures.Count == 0)
-            SpawnRandomNote(onset.timestamp);
-//        CreateLine(onset.timestamp, -2 + (float)lastNote * .1f, 0.3f, Color.blue, onset.strength / 10);
     }
-    private void OnLoaded(AudioClip clip)
+    void OnApplicationQuit()
     {
-        analyzer.Analyze(clip);
+        UnityEngine.Debug.Log("writing logs");
+        File.WriteAllText("log.csv",sb.ToString());
     }
 
-    void SpawnRandomNote(float beattime)
+    Note SpawnRandomNote(float beattime)
     {
         var n = Instantiate(note, Vector3.zero, Quaternion.identity).GetComponent<Note>();
 
@@ -170,7 +151,37 @@ public class NoteSpawner : MonoBehaviour
             }
         }
 
-        n.Init(beattime*2, rnd, musicPlayer, 1, handSide, hookSide);
+        n.Init(beattime, rnd, musicPlayer, 1, handSide, hookSide);
         n.reqStrength = 0;
+        randomNote.Add(n);
+
+        return n;
     }
+
+    FootNote SpawnRandomFootNote(float beattime)
+    {
+        var n = Instantiate(footNote, Vector3.zero, Quaternion.identity).GetComponent<FootNote>();
+        Vector2 rnd = new Vector2(Random.Range(-.7f, .7f), 0);
+        HandSide handSide = HandSide.any;
+        float? hookSide = null;
+        if (Random.Range(0, 20) < 1)
+            handSide = HandSide.left;
+        else if (Random.Range(0, 19) < 1)
+            handSide = HandSide.right;
+        else
+        {
+            switch (Random.Range(0, 20))
+            {
+                case 0: hookSide = 0; break;
+                case 1: hookSide = 90; break;
+                case 2: hookSide = 270; break;
+                case 3: hookSide = 180; break;
+                default: hookSide = null; break;
+            }
+        }
+
+        n.Init(beattime, rnd, musicPlayer, 1, handSide, hookSide);
+        return n;
+    }
+
 }

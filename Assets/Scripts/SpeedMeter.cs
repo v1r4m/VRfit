@@ -15,8 +15,16 @@ public class SpeedMeter : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (
+                float.IsNaN(velocity.x) || float.IsInfinity(velocity.x) ||
+                float.IsNaN(velocity.y) || float.IsInfinity(velocity.y) ||
+                float.IsNaN(velocity.z) || float.IsInfinity(velocity.z)
+            )
+            velocity = Vector3.zero;
+
         velocity *= 0.95f;
-        velocity += ((transform.position - lastPos)/Time.deltaTime) * 0.05f;
+        if(Time.deltaTime != 0)
+            velocity += ((transform.position - lastPos)/Time.deltaTime) * 0.05f;
         lastPos = transform.position;
     }
 }

@@ -17,7 +17,6 @@ public class hrscript : MonoBehaviour
     // Start is called before the first frame update
     //        string url = "http://127.0.0.1:999/";
     //       public static Client Socket { get; private set; }
-    private TMP_Text txt;
 
         /*        void Awake()
                 {
@@ -51,23 +50,21 @@ public class hrscript : MonoBehaviour
                     {
                         Debug.Log(data.Json.args[0]);
                     });*/
-        txt = GameObject.Find("HRtext").GetComponent<TMP_Text>();
         SocketManager.Socket.On("hr", (data) =>
                     {
-                        UnityEngine.Debug.Log(data.Json.args[0]);
+                        UnityEngine.Debug.Log("hr raw: " + data.Json.args[0]);
 //                        txt.text = "heart rate changed: " + data.Json.args[0];
                         datastring = data.Json.args[0].ToString();
                         datashow = (Convert.ToInt32(datastring));
-                        dataint = (Convert.ToInt32(datastring)-35);
-                        thres = dataint/500;
-//                        UnityEngine.Debug.Log(thres);
-                        NoteSpawner.hr = Convert.ToSingle(0.06 + thres);
+                        dataint = (Convert.ToInt32(datastring));
+                        thres = dataint;
+                        UnityEngine.Debug.Log("hr: " + thres);
+                        NoteSpawner.hr = Convert.ToSingle(thres);
                     });
                     
     }
     void Update()
     {
-        txt.text = "heart rate changed: "+datashow;
     }
 
     // Update is called once per frame
