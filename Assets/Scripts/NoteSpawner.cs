@@ -54,19 +54,6 @@ public class NoteSpawner : MonoBehaviour
     void Update()
     {
         float time = musicPlayer.CurrentBeat;
-        if (hr < hrthres)
-        {
-            int count = 0;
-            foreach (Note note in randomNote)
-            {
-                if(count%4==0)
-                {
-                    Destroy(note.gameObject);
-                    count = count + 1;
-                }
-            }
-        }
-
 
     }
     void SpawnRandomFootNote()
@@ -185,6 +172,5 @@ public class NoteSpawner : MonoBehaviour
 
         n.Init(beattime*2, rnd, musicPlayer, 1, handSide, hookSide);
         n.reqStrength = 0;
-        randomNote.Add(n);
     }
 }
