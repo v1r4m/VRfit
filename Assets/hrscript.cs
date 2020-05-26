@@ -60,7 +60,7 @@ public class hrscript : MonoBehaviour
                         dataint = (Convert.ToInt32(datastring)-35);
                         thres = dataint/500;
 //                        UnityEngine.Debug.Log(thres);
-                        //RhythmTool.Examples.Visualizer.hr = Convert.ToSingle(0.06 + thres);
+                        RhythmTool.Examples.Visualizer.hr = Convert.ToSingle(0.06 + thres);
                     });
                     
     }
