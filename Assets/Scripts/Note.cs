@@ -15,7 +15,7 @@ public class Note : MonoBehaviour
     public HandSide handSide;
     public Transform sideIndicator;
     public float speed;
-
+    public float importance;
     public AudioClip TickSound;
 
     public List<GameObject> OnDestoroyObjects;

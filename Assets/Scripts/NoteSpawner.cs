@@ -67,58 +67,93 @@ public class NoteSpawner : MonoBehaviour
         
         foreach (var onset in onsetFeatures) //여기서생성
         {
-            SpawnRandomNote(onset.timestamp);
+            SpawnRandomFootNote(onset.timestamp).importance = onset.strength;
+            SpawnRandomNote(onset.timestamp).importance = onset.strength;
         }
 
 
         rhythmPlayer.Play();
     }
-    StringBuilder sb = new StringBuilder("hr, targetSPN(difficulty), avgDelta (real difficulty), hrthres\n");
 
-    string threeFloat(float f)
+
+
+    string BuildPointThreeFloat(float f)
     { return string.Format("{0:f3}", f); }
 
+    int lookupDist = 10;
 
+    StringBuilder sb = new StringBuilder("hr, targetSPN(difficulty), avgDelta (real difficulty), hrthres\n");
+    float hrDiff = 0;
+    float lastHr;
     void FixedUpdate()
     {
         txt.text = "heart rate: " + hr  + "\nTarget HR = " + hrthres;
-        txt.text += "\nTarget Difficulty : " + threeFloat(targetSPN) + "\n<sub>Real Difficulty : " + threeFloat(avgDelta??0);
-        txt.text += "\nAdjusted Difficulty : " + threeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
+        txt.text += "\nTarget Difficulty : " + BuildPointThreeFloat(targetSPN) + "\n<sub>Real Difficulty : " + BuildPointThreeFloat(avgDelta??0);
+        txt.text += "\nAdjusted Difficulty : " + BuildPointThreeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
+        txt.text += "\nHD : " + BuildPointThreeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
         float time = musicPlayer.CurrentBeat;
-        targetSPN -= (hrthres - hr) * hrWeight * Time.deltaTime;
-        if (targetSPN < 0)
-            targetSPN = 0;
+        hrDiff = (hr - lastHr) * 0.1f + hrDiff * 0.9f;
+        lastHr = hr;
+        float hrAdjWeight;
+        if (
+            hrDiff < -0.1f && hr < hrDiff // hr이 떨어지고 있고, hr이 hrDiff보다 낮음
+            ||
+            hrDiff > 0.1f && hr > hrDiff // hr이 떨어지고 있고, hr이 hrDiff보다 낮음
+            ) hrAdjWeight = 0.01f;// 난이도 바꾸는속도 줄임
+        else
+            hrAdjWeight = 1;
+         targetSPN -= (hrthres - hr) * hrWeight * hrAdjWeight * Time.fixedDeltaTime;
+
+        if (targetSPN < 0.1)
+            targetSPN = 0.1f;
         if (targetSPN > 10)
             targetSPN = 10;
-        while (randomNote[scannedUntil] == null)
+        
+        while (scannedUntil + lookupDist < randomNote.Count && randomNote[scannedUntil] == null)
             scannedUntil++;
 
-        while (randomNote[scannedUntil].beat < time + lookaheadtime && scannedUntil + 2 < randomNote.Count)
+        float adjustedDiff = targetSPN + (targetSPN - avgDelta ?? targetSPN);
+
+        float noteDeltaTargetDiff = 0;
+
+        int seqDrop = 0;
+        bool loop = false;
+        while (randomNote[scannedUntil].beat < time + lookaheadtime && scannedUntil + lookupDist < randomNote.Count)
         {
-            float noteDelta = randomNote[scannedUntil + 1].beat - randomNote[scannedUntil].beat;
-            float noteDeltaifDropped = randomNote[scannedUntil + 2].beat - randomNote[scannedUntil].beat;
+            loop = true;
+            float noteDeltaSum = 0;
+            noteDeltaSum = randomNote[scannedUntil + lookupDist].beat - randomNote[scannedUntil].beat;
 
-            float adjusted = targetSPN + (targetSPN - avgDelta ?? targetSPN);
+            float noteDeltaAvg = noteDeltaSum / 10;
+            float noteDeltaAvgifDropped = noteDeltaSum / 9; 
 
-            float DeltaTarget = Mathf.Abs(adjusted - noteDelta);
-            float ifDropDeltaTarget = Mathf.Abs(adjusted - noteDeltaifDropped);
 
-            if (DeltaTarget > ifDropDeltaTarget)
+            noteDeltaTargetDiff = Mathf.Abs(adjustedDiff - noteDeltaAvg);
+            float ifDropDiff = Mathf.Abs(adjustedDiff - noteDeltaAvgifDropped);
+
+            if (noteDeltaTargetDiff > ifDropDiff && seqDrop < 3) 
             {
-                Destroy(randomNote[scannedUntil + 1].gameObject);
-                randomNote.RemoveAt(scannedUntil + 1);
-                DeltaTarget = ifDropDeltaTarget;
+                seqDrop++;
+                UnityEngine.Debug.Log(string.Format("{0},{1},{2},{3}\n", scannedUntil, targetSPN / 1, avgDelta ?? 0, hrthres));
+                int selectedIndex = scannedUntil + 1;
+                for (int i = scannedUntil + 2; i < scannedUntil + lookupDist; i++)
+                {
+                    if (randomNote[i].importance < randomNote[selectedIndex].importance)
+                        selectedIndex = i;
+                }
+                Destroy(randomNote[selectedIndex].gameObject);
+                randomNote.RemoveAt(selectedIndex);
+                noteDeltaTargetDiff = ifDropDiff;
                 UnityEngine.Debug.Log("Dropped one!");
                 continue;
             }
-
-            lastDelta = DeltaTarget;
-            UnityEngine.Debug.Log("ad = " + avgDelta);
-            avgDelta = (avgDelta ?? DeltaTarget) * 0.5f + noteDelta * 0.5f; // LPS
-            UnityEngine.Debug.Log("ad = " + avgDelta + " and delt = " + noteDelta);
-            sb.Append(string.Format("{0},{1},{2},{3}\n", hr, targetSPN/1, avgDelta ?? 0, hrthres));
+            seqDrop = 0;
+            lastDelta = noteDeltaTargetDiff;
             scannedUntil++;
         }
+        if(loop)
+            avgDelta = (avgDelta ?? targetSPN) * 0.5f + noteDeltaTargetDiff * 0.5f; // LPS
+        sb.Append(string.Format("{0},{1},{2},{3}\n", hr, targetSPN / 1, avgDelta ?? 0, hrthres));
 
 
     }
@@ -128,11 +163,15 @@ public class NoteSpawner : MonoBehaviour
         File.WriteAllText("log.csv",sb.ToString());
     }
 
+    float heightInMeters = 1.7f;
     Note SpawnRandomNote(float beattime)
     {
         var n = Instantiate(note, Vector3.zero, Quaternion.identity).GetComponent<Note>();
 
-        Vector2 rnd = Random.insideUnitCircle * .6f + new Vector2(0, 1f);
+        float shoulderHeight = heightInMeters * 7 / 8;
+        float armLength = heightInMeters / 4;
+        Vector2 rnd = Random.insideUnitCircle * armLength + new Vector2(0, shoulderHeight);
+
         HandSide handSide = HandSide.any;
         float? hookSide = null;
         if (Random.Range(0, 20) < 1)
@@ -181,6 +220,7 @@ public class NoteSpawner : MonoBehaviour
         }
 
         n.Init(beattime, rnd, musicPlayer, 1, handSide, hookSide);
+        randomNote.Add(n);
         return n;
     }
 

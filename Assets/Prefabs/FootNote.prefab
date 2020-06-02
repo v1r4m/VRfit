@@ -159,7 +159,9 @@ MonoBehaviour:
   mp: {fileID: 0}
   reqStrength: 0
   handSide: 0
+  sideIndicator: {fileID: 0}
   speed: 0
-  TickSound: {fileID: 8300000, guid: fe994881a7d1ab34ba824a803505c216, type: 3}
+  importance: 0
+  TickSound: {fileID: 8300000, guid: 8ce53cf4623c27248adad04a4b5de82e, type: 3}
   OnDestoroyObjects:
   - {fileID: 100014, guid: 5332791ebce075d4a9e56f4581e7fb47, type: 3}

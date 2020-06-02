@@ -6,22 +6,11 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
-public class FootNote : MonoBehaviour
+public class FootNote : Note
 {
-    public float beat;
-    public Vector2 pos;
-    public float? hookSide;
-    public MusicPlayer mp;
-    public float reqStrength;
-    public HandSide handSide;
-    public float speed;
-
-    public AudioClip TickSound;
-
-    public List<GameObject> OnDestoroyObjects;
 
     bool inited = false; 
-    public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
+    public new void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
         this.beat = beat;
         this.pos = pos;

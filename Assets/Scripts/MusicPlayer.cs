@@ -30,7 +30,7 @@ public class MusicPlayer : MonoBehaviour
 
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
         var allPlayers = FindObjectsOfType<MusicPlayer>();
         @as = GetComponent<AudioSource>();

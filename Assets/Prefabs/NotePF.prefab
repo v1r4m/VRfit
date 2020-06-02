@@ -116,6 +116,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -198,6 +199,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -269,7 +271,7 @@ MonoBehaviour:
   reqStrength: 1
   handSide: 2
   sideIndicator: {fileID: 4210101128918647597}
-  speed: 0
+  speed: 3.56
   TickSound: {fileID: 8300000, guid: f1534b0f9f0bf3e49a250a0f0b4aa38e, type: 3}
   OnDestoroyObjects:
   - {fileID: 100004, guid: b46890100828db6429ff69c322b45893, type: 3}
