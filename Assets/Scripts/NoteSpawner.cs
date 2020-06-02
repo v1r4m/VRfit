@@ -23,6 +23,7 @@ public class NoteSpawner : MonoBehaviour
     private float prevTime;
     private List<Beat> beats;
     private List<Onset> onsetFeatures;
+    private List<Chroma> chromaFeatures;
 
     private List<Note> randomNote = new List<Note>();
 
@@ -50,24 +51,32 @@ public class NoteSpawner : MonoBehaviour
     float? avgDelta = null;
     int scannedUntil = 0;
     TMPro.TMP_Text txt;
+    TMPro.TMP_Text heartText;
     void Awake()
     {
         txt = GameObject.Find("HRText").GetComponent<TMPro.TMP_Text>();
+        heartText = GameObject.Find("hrui").GetComponent<TMPro.TMP_Text>();
         beats = new List<Beat>();
         onsetFeatures = new List<Onset>();
+        chromaFeatures = new List<Chroma>();
         musicPlayer = GetComponent<MusicPlayer>();
         audioSource = GetComponent<AudioSource>();
         rhythmPlayer = GetComponent<RhythmPlayer>();
 
         rhythmData.GetIntersectingFeatures(onsetFeatures,0,180);
         rhythmData.GetIntersectingFeatures(beats, 0, 180);
+        rhythmData.GetFeatures(chromaFeatures, 0, 180);
 
-        UnityEngine.Debug.Log(onsetFeatures);
+//        UnityEngine.Debug.Log(onsetFeatures);
 
-        
+        /*
         foreach (var onset in onsetFeatures) //여기서생성
         {
             SpawnRandomNote(onset.timestamp);
+        }*/
+        foreach(var chroma in chromaFeatures)
+        {
+            SpawnRandomNote(chroma.timestamp);
         }
 
 
@@ -84,6 +93,7 @@ public class NoteSpawner : MonoBehaviour
         txt.text = "heart rate: " + hr  + "\nTarget HR = " + hrthres;
         txt.text += "\nTarget Difficulty : " + threeFloat(targetSPN) + "\n<sub>Real Difficulty : " + threeFloat(avgDelta??0);
         txt.text += "\nAdjusted Difficulty : " + threeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
+        heartText.text = hr.ToString();
         float time = musicPlayer.CurrentBeat;
         targetSPN -= (hrthres - hr) * hrWeight * Time.deltaTime;
         if (targetSPN < 0)
