@@ -34,7 +34,7 @@ public class TrackerFinder : MonoBehaviour
 
     public bool Engage()
     {
-        var cast = Physics.BoxCastAll(transform.position, new Vector3(reigeon, reigeon, reigeon), Vector3.up);
+        var cast = Physics.BoxCastAll(transform.position, new Vector3(reigeon/2, reigeon/2, reigeon/2), Vector3.up);
 
         int inColCount = 0;
         Valve.VR.SteamVR_TrackedObject foundObject = null;

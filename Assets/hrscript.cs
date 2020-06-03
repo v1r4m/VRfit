@@ -56,13 +56,13 @@ public class hrscript : MonoBehaviour
                 SocketManager.Socket.On("hr", (data) =>
                 {
                     if (hrOverride) return;
-                    UnityEngine.Debug.Log("hr raw: " + data.Json.args[0]);
+                    //UnityEngine.Debug.Log("hr raw: " + data.Json.args[0]);
 //                        txt.text = "heart rate changed: " + data.Json.args[0];
                     datastring = data.Json.args[0].ToString();
                     datashow = (Convert.ToInt32(datastring));
                     dataint = (Convert.ToInt32(datastring));
                     thres = dataint;
-                    UnityEngine.Debug.Log("hr: " + thres);
+                    //UnityEngine.Debug.Log("hr: " + thres);
                     NoteSpawner.hr = Convert.ToSingle(thres);
                 });
                     

@@ -69,15 +69,15 @@ public class NoteSpawner : MonoBehaviour
 
 //        UnityEngine.Debug.Log(onsetFeatures);
 
-        /*
+        
         foreach (var onset in onsetFeatures) //여기서생성
         {
             SpawnRandomFootNote(onset.timestamp).importance = onset.strength;
             SpawnRandomNote(onset.timestamp).importance = onset.strength;
-        }*/
-        foreach(var chroma in chromaFeatures)
+        }
+        //foreach(var chroma in chromaFeatures)
         {
-            SpawnRandomNote(chroma.timestamp);
+        //    SpawnRandomNote(chroma.timestamp);
         }
 
 
@@ -97,8 +97,8 @@ public class NoteSpawner : MonoBehaviour
     void FixedUpdate()
     {
         txt.text = "heart rate: " + hr  + "\nTarget HR = " + hrthres;
-        txt.text += "\nTarget Difficulty : " + threeFloat(targetSPN) + "\n<sub>Real Difficulty : " + threeFloat(avgDelta??0);
-        txt.text += "\nAdjusted Difficulty : " + threeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
+        txt.text += "\nTarget Difficulty : " + BuildPointThreeFloat(targetSPN) + "\n<sub>Real Difficulty : " + BuildPointThreeFloat(avgDelta??0);
+        txt.text += "\nAdjusted Difficulty : " + BuildPointThreeFloat(targetSPN + (targetSPN - avgDelta ?? 0));
         float time = musicPlayer.CurrentBeat;
         hrDiff = (hr - lastHr) * 0.1f + hrDiff * 0.9f;
         lastHr = hr;
@@ -106,7 +106,7 @@ public class NoteSpawner : MonoBehaviour
         if (
             hrDiff < -0.1f && hr < hrDiff // hr이 떨어지고 있고, hr이 hrDiff보다 낮음
             ||
-            hrDiff > 0.1f && hr > hrDiff // hr이 떨어지고 있고, hr이 hrDiff보다 낮음
+            hrDiff > 0.1f && hr > hrDiff 
             ) hrAdjWeight = 0.01f;// 난이도 바꾸는속도 줄임
         else
             hrAdjWeight = 1;
@@ -139,7 +139,7 @@ public class NoteSpawner : MonoBehaviour
             noteDeltaTargetDiff = Mathf.Abs(adjustedDiff - noteDeltaAvg);
             float ifDropDiff = Mathf.Abs(adjustedDiff - noteDeltaAvgifDropped);
 
-            if (noteDeltaTargetDiff > ifDropDiff && seqDrop < 3) 
+            if (noteDeltaTargetDiff > ifDropDiff) 
             {
                 seqDrop++;
                 UnityEngine.Debug.Log(string.Format("{0},{1},{2},{3}\n", scannedUntil, targetSPN / 1, avgDelta ?? 0, hrthres));
@@ -156,11 +156,10 @@ public class NoteSpawner : MonoBehaviour
                 continue;
             }
             seqDrop = 0;
-            lastDelta = noteDeltaTargetDiff;
+            lastDelta = noteDeltaAvg;
+            avgDelta = (avgDelta ?? targetSPN) * 0.5f + lastDelta * 0.5f; // LPF
             scannedUntil++;
         }
-        if(loop)
-            avgDelta = (avgDelta ?? targetSPN) * 0.5f + noteDeltaTargetDiff * 0.5f; // LPS
         sb.Append(string.Format("{0},{1},{2},{3}\n", hr, targetSPN / 1, avgDelta ?? 0, hrthres));
 
 
