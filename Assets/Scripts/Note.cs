@@ -54,7 +54,7 @@ public class Note : MonoBehaviour
         block.SetColor("_BaseColor", c);
 
         // You can cache a reference to the renderer to avoid searching for it.
-        GetComponent<Renderer>().SetPropertyBlock(block);
+        GetComponentInChildren<Renderer>().SetPropertyBlock(block);
 #endif
         hookSide = hss;
         if (hookSide == null)
