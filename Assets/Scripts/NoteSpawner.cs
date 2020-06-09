@@ -104,13 +104,16 @@ public class NoteSpawner : MonoBehaviour
         lastHr = hr;
         float hrAdjWeight;
         if (
-            hrDiff < -0.1f && hr < hrDiff // hr이 떨어지고 있고, hr이 hrDiff보다 낮음
+            hrDiff < -0.1f && hr < hrthres // hr이 떨어지고 있고, hr이 hrthres보다 낮음
             ||
-            hrDiff > 0.1f && hr > hrDiff 
+            hrDiff > 0.1f && hr > hrthres
             ) hrAdjWeight = 0.01f;// 난이도 바꾸는속도 줄임
         else
             hrAdjWeight = 1;
-         targetSPN -= (hrthres - hr) * hrWeight * hrAdjWeight * Time.fixedDeltaTime;
+        
+        if (hr < hrthres && avgDelta > targetSPN * 2)//hr이 hrthres보다 낮지만, targetSPN보다 avgDelta가 현저히 높을때는 동결
+            hrAdjWeight = 0;
+        targetSPN -= (hrthres - hr) * hrWeight * hrAdjWeight * Time.fixedDeltaTime;
 
         if (targetSPN < 0.1)
             targetSPN = 0.1f;
@@ -161,8 +164,6 @@ public class NoteSpawner : MonoBehaviour
             scannedUntil++;
         }
         sb.Append(string.Format("{0},{1},{2},{3}\n", hr, targetSPN / 1, avgDelta ?? 0, hrthres));
-
-
     }
     void OnApplicationQuit()
     {
