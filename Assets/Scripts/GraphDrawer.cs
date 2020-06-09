@@ -6,18 +6,29 @@ using System.Linq;
 using UnityEngine.UI;
 
 
-[RequireComponent(typeof(LineRenderer), typeof(RectTransform))]
+[RequireComponent( typeof(RectTransform))]
 class GraphDrawer : MonoBehaviour
 {
     int sampleCount = 100;
-    public float[] hrSamples;
-    public float[] hrThresSamples;
+    float[] hrSamples;
+    float[] hrThresSamples;
     public float hrMin = 80;
     public float hrMax = 150;
     Vector3 leftDown;
     Vector3 UpVector;
     Vector3 RightVector;
-
+    [SerializeField]
+    LineRenderer hrGraphDrawer;
+    [SerializeField]
+    LineRenderer hrThreasGraphDrawer;
+    [SerializeField]
+    TMPro.TextMeshProUGUI AvgKcalText;
+    [SerializeField]
+    float avgHR;
+    [SerializeField]
+    float usedkcal;
+    [SerializeField]
+    float estkcal;
     //public Transform hrIndicator;
     bool remap = false;
     void OnResize()
@@ -28,17 +39,26 @@ class GraphDrawer : MonoBehaviour
         UpVector = corners[1] - corners[0];
         RightVector = corners[3] - corners[0];
 
-        LineRenderer lr = GetComponent<LineRenderer>();
-        lr.positionCount = sampleCount;
-
+        hrGraphDrawer.positionCount = sampleCount;
+        hrThreasGraphDrawer.positionCount = sampleCount;
         for (int i = 0; i < sampleCount; i++)
-            lr.SetPosition(i,
-                ProjectTo3D(new Vector2(
-                            i / (float)sampleCount, 
-                            (hrSamples[i]-hrMin)/(hrMax - hrMin)
-                            )
-                )
+        {
+            hrGraphDrawer.SetPosition(i,
+                                ProjectTo3D(new Vector2(
+                                                i / (float)sampleCount,
+                                                (hrSamples[i] - hrMin) / (hrMax - hrMin)
+                                            )
+                                )
             );
+            hrThreasGraphDrawer.SetPosition(i,
+                                ProjectTo3D(new Vector2(
+                                                i / (float)sampleCount,
+                                                (hrThresSamples[i] - hrMin) / (hrMax - hrMin)
+                                            )
+                                )
+            );
+        }
+        AvgKcalText.text = usedkcal + " Kcal";
     }
 
     private void OnRectTransformDimensionsChange()
@@ -65,6 +85,10 @@ class GraphDrawer : MonoBehaviour
         hrThresSamples = new float[sampleCount];
 
         int linesPerSample = (hrSamples.Length / file.Count) + 1;
+
+        avgHR = hr.Average();
+        estkcal = ArgsGetter.GetKcal(ArgsGetter.TargetHR);
+        usedkcal = ArgsGetter.GetKcal(avgHR);
 
         for (int i = 0; i < sampleCount; i++)
         {

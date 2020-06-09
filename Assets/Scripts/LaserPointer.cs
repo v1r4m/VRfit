@@ -39,12 +39,21 @@ public class LaserPointer : MonoBehaviour
 
         if (m_ClickAction.GetLastStateDown(m_TargetSource))
         {
+            
             ButtonFunctions bf;
 
             if (coolDown > 0)
                 if (hit.collider != null)
+                {
+                    Debug.Log("Click Hit " + hit.collider.gameObject.name);
                     if ((bf = hit.collider.GetComponent<ButtonFunctions>()) != null)
+                    {
+                        Debug.Log("Click Sent " + hit.collider.gameObject.name);
                         bf.OnClick();
+                    }
+                    
+                }
+                    
 
             coolDown = 5;
         }

@@ -39,7 +39,7 @@ public class ButtonFunctions : MonoBehaviour
                 if(tmp.text == "M")
                     tmp.text = "F";
                 else
-                    tmp.text = "F";
+                    tmp.text = "M";
                 break;
 
             case BtnType.LoadGameScene:
