@@ -63,14 +63,20 @@ class GraphDrawer : MonoBehaviour
 
     private void OnRectTransformDimensionsChange()
     {
-        remap = true;
+        //remap = true;
     }
     private void Update()
     {
         if (remap) OnResize();
         remap = false;
     }
-    void Start()
+    private float TryParse(string s)
+    {
+        bool su = float.TryParse(s, out float result);
+        if (su) return result;
+        else return 0;
+    }
+    void Awake()
     {
         LineRenderer r = GetComponent<LineRenderer>();
         //StringBuilder sb = new StringBuilder("hr, targetSPN(difficulty), avgDelta (real difficulty), hrthres\n");
@@ -78,13 +84,16 @@ class GraphDrawer : MonoBehaviour
         var file = File.ReadAllLines("log.csv").Select(s => s.Split(',')).ToList();
         file.RemoveAt(0);//remove header
 
-        var hr = file.Select(line => float.Parse(line[0])).ToList();
-        var hrThres = file.Select(line => float.Parse(line[3])).ToList();
+        var hr_ = from string[] line in file select TryParse(line[0]);
+        var hrThres_ = from string[] line in file select TryParse(line[3]);
+        var hr = hr_.ToList();
+        var hrThres = hrThres_.ToList();
 
         hrSamples = new float[sampleCount];
         hrThresSamples = new float[sampleCount];
 
-        int linesPerSample = (hrSamples.Length / file.Count) + 1;
+        var fc =  file.Count;
+        int linesPerSample = (fc/ sampleCount) + 1;
 
         avgHR = hr.Average();
         estkcal = ArgsGetter.GetKcal(ArgsGetter.TargetHR);
@@ -92,14 +101,9 @@ class GraphDrawer : MonoBehaviour
 
         for (int i = 0; i < sampleCount; i++)
         {
-            int from = Mathf.Max(0,
-                    Mathf.Min (
-                        hrSamples.Length - linesPerSample ,
-                        (int) (  
-                                    (float)hrSamples.Length / file.Count * ( i +0.5f)  
-                        )
-                    )
-                );
+            int a = Mathf.Min(fc - linesPerSample,(int) (((float)fc) / sampleCount * i));
+            int from = Mathf.Max(0, a);
+            Debug.Log(a+", "+ from);
             hrSamples[i] = (float)Enumerable.Range(from, linesPerSample).Average(q => hr[q]);
             hrThresSamples[i] = (float)Enumerable.Range(from, linesPerSample).Average(q => hrThres[q]);
         }
@@ -108,7 +112,7 @@ class GraphDrawer : MonoBehaviour
     }
 
     Vector3 ProjectTo3D(Vector2 coord)
-    {
+    {   
         return leftDown + Mathf.Max(coord.x, 0) * RightVector + Mathf.Max(coord.y, 0) * UpVector;
     }
 }

@@ -204,6 +204,9 @@ MonoBehaviour:
   mp: {fileID: 0}
   reqStrength: 0
   handSide: 0
+  renderer:
+  - {fileID: 9172473555090519245}
+  - {fileID: 7842210870407118037}
   sideIndicator: {fileID: 0}
   speed: 0
   importance: 0
@@ -282,6 +285,18 @@ PrefabInstance:
 --- !u!4 &167825523920835274 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: 73bbdccb2b0ed744fa13d23826b18250,
+    type: 3}
+  m_PrefabInstance: {fileID: 5129187256062589392}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &9172473555090519245 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4063835366044962077, guid: 73bbdccb2b0ed744fa13d23826b18250,
+    type: 3}
+  m_PrefabInstance: {fileID: 5129187256062589392}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &7842210870407118037 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6054058774237248251, guid: 73bbdccb2b0ed744fa13d23826b18250,
     type: 3}
   m_PrefabInstance: {fileID: 5129187256062589392}
   m_PrefabAsset: {fileID: 0}

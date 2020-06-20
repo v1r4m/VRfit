@@ -27,7 +27,7 @@ public class Counter : MonoBehaviour
             if (mode == Mode.counter)
                 tmp.text = val.ToString();
             else if (mode == Mode.intensity)
-                tmp.text = (new string[] {"", "Lo", "Mid", "Hi" })[val];
+                tmp.text = (new string[] {"", "Low", "Middle", "High" })[val];
             
         }
     }

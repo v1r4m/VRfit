@@ -423,7 +423,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 228889577}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 9.41}
+  m_LocalPosition: {x: 0, y: 0, z: 10.84}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -431,7 +431,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 2.24, y: 26.92}
+  m_AnchoredPosition: {x: 7.2, y: 37.32}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!4 &351611166 stripped
@@ -1327,11 +1327,11 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 1.15
+  m_fontSize: 1.3
   m_fontSizeBase: 1.15
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 0
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_textAlignment: 514
@@ -1647,7 +1647,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: -1, y: 8, z: 7, w: -9}
+  m_BoundingSphereOverride: {x: 0, y: 2.8088e-41, z: 0, w: 0.000000015599653}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 1
@@ -1859,7 +1859,7 @@ MonoBehaviour:
   two: {fileID: 1634557425}
   inputCsv: {fileID: 4900000, guid: 619f9b7e64b03c24482ce70867cb2b7e, type: 3}
   targetSPN: 1
-  hrWeight: 0.003
+  hrWeight: 0.0005
 --- !u!114 &2140120252
 MonoBehaviour:
   m_ObjectHideFlags: 0

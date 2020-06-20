@@ -6,7 +6,7 @@ public class UniqueDontDestoryOnLoad : MonoBehaviour
 {
     static bool exists = false;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (exists == false)
             exists = true;

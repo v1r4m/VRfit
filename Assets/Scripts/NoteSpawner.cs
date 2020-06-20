@@ -43,6 +43,9 @@ public class NoteSpawner : MonoBehaviour
     void OnDestroy()
     {
         eventProvider.Unregister<Beat>(OnBeat);
+
+        UnityEngine.Debug.Log("writing logs");
+        File.WriteAllText("log.csv", sb.ToString());
     }
 
     public float targetSPN = 1;
@@ -63,9 +66,9 @@ public class NoteSpawner : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         rhythmPlayer = GetComponent<RhythmPlayer>();
 
-        rhythmData.GetIntersectingFeatures(onsetFeatures,0,180);
-        rhythmData.GetIntersectingFeatures(beats, 0, 180);
-        rhythmData.GetFeatures(chromaFeatures, 0, 180);
+        rhythmData.GetIntersectingFeatures(onsetFeatures,0,200);
+        rhythmData.GetIntersectingFeatures(beats, 0, 200);
+        rhythmData.GetFeatures(chromaFeatures, 0, 200);
 
 //        UnityEngine.Debug.Log(onsetFeatures);
 
@@ -164,11 +167,6 @@ public class NoteSpawner : MonoBehaviour
             scannedUntil++;
         }
         sb.Append(string.Format("{0},{1},{2},{3}\n", hr, targetSPN / 1, avgDelta ?? 0, hrthres));
-    }
-    void OnApplicationQuit()
-    {
-        UnityEngine.Debug.Log("writing logs");
-        File.WriteAllText("log.csv",sb.ToString());
     }
 
     float heightInMeters = 1.7f;

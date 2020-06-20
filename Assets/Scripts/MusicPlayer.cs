@@ -57,7 +57,8 @@ public class MusicPlayer : MonoBehaviour
                     @as.PlayOneShot(tock, 6);
             metronomePlayed++;
         }
-        
 
+        if (isFInished)
+            UnityEngine.SceneManagement.SceneManager.LoadScene("ResultScene");
     }
 }

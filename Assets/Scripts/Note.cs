@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum HandSide {left,right,any,both}
@@ -13,13 +14,18 @@ public class Note : MonoBehaviour
     public MusicPlayer mp;
     public float reqStrength;
     public HandSide handSide;
+    public List<MeshRenderer> renderer;
     public Transform sideIndicator;
     public float speed;
     public float importance;
     public AudioClip TickSound;
 
     public List<GameObject> OnDestoroyObjects;
-    
+    public void Start()
+    {
+        foreach (var r in renderer)
+            r.enabled = false;
+    }
     public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
         this.beat = beat;
@@ -61,11 +67,20 @@ public class Note : MonoBehaviour
             sideIndicator.gameObject.SetActive(false);
         else
             sideIndicator.Rotate(0, 0, hss ?? 0);
+        //var tmp__ = from Renderer a in GetComponents<Renderer>() select a.enabled = false;
+        var tmp___ = from Renderer a in GetComponentsInChildren<Renderer>() select a.enabled = false;
     }
 
+    protected bool renEnabled = false;
     void Update()
     {
         float delta = mp.CurrentBeat - beat;
+        if (delta > -10 && renEnabled == false) {
+            foreach (var r in renderer)
+                r.enabled = true;
+            //var tmp__ = from Renderer a in GetComponents<Renderer>() select a.enabled = true;
+            var tmp___ = from Renderer a in GetComponentsInChildren<MeshRenderer>() select a.enabled = true;
+        }
         if (delta > 1) Destroy(this.gameObject);
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }

@@ -64,12 +64,9 @@ public class TrackerFinder : MonoBehaviour
     }
 
 
-    private void Awake()
-    {
-        Reset();
-    }
     private IEnumerator Start()
     {
+        Reset();
         SpawnTrackedObject(trackedObjectPF);
 
 

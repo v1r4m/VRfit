@@ -21,7 +21,7 @@ public class EstCal : MonoBehaviour
     void Update()
     {
         ag.UpdateValue();
-        tmp.text = "Estimated Calorie: " + ArgsGetter.GetKcal(ArgsGetter.TargetHR) + "Kcal";
+        tmp.text = "" + ArgsGetter.GetKcal(ArgsGetter.TargetHR) + "Kcal";
         switch (ArgsGetter.Intensity)
         {
             case 1:

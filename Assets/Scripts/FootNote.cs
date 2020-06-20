@@ -57,8 +57,17 @@ public class FootNote : Note
         {
             transform.position = new Vector3(9999, 9999, 99999);
             return;
-        } 
+        }
         float delta = mp.CurrentBeat - beat;
+
+        if (delta > -10 && renEnabled == false)
+        {
+            foreach (var r in renderer)
+                r.enabled = true;
+            //var tmp__ = from Renderer a in GetComponents<Renderer>() select a.enabled = true;
+            var tmp___ = from Renderer a in GetComponentsInChildren<MeshRenderer>() select a.enabled = true;
+        }
+
         if (delta > 1) Destroy(this.gameObject);
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }
