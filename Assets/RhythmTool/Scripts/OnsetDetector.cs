@@ -20,7 +20,7 @@ namespace RhythmTool
 
         [Range(0, 1), Tooltip("Normalize the song. A higher value helps find onsets for quiet songs, but can increase false positives.")]
         public float normalization = .2f;
-
+        
         [Range(0, 1), Tooltip("Threshold for finding onsets. A lower value will make the onset detection more sensitive, but can increase false positives.")]
         public float threshold = .3f;
 

@@ -108,7 +108,7 @@ namespace RhythmTool
         {
             Array.Copy(downsampled, spectrum, bufferSize);
 
-//            Util.ApplyWindow(spectrum, window);
+            Util.ApplyWindow(spectrum, window);
             Util.GetSpectrum(spectrum);
             Util.GetSpectrumMagnitude(spectrum, magnitude);
 

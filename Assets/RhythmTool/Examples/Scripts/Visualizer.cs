@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,7 +19,6 @@ namespace RhythmTool.Examples
         private List<Chroma> chromaFeatures;
 
         private Note lastNote = Note.FSHARP;
-        public static float hr;
 
         void Awake()
         {           
@@ -31,7 +27,7 @@ namespace RhythmTool.Examples
 
             eventProvider.Register<Beat>(OnBeat);
             eventProvider.Register<Onset>(OnOnset);
-//            eventProvider.Register<Value>(OnSegment, "Segments");
+            eventProvider.Register<Value>(OnSegment, "Segments");
 
             lines = new List<Line>();
 
@@ -59,13 +55,6 @@ namespace RhythmTool.Examples
                     Destroy(line.gameObject);
                     toRemove.Add(line);
                 }
-  //              UnityEngine.Debug.Log(line.opacity);
-                if(line.opacity<hr)
-                {
-                    Destroy(line.gameObject);
-                    toRemove.Add(line);
-                    UnityEngine.Debug.Log(hr);
-                }
             }
 
             foreach (Line line in toRemove)
@@ -77,8 +66,7 @@ namespace RhythmTool.Examples
             {
                 Vector3 position = line.transform.position;
 
-                position.y = line.timestamp - time - 2;
-//                UnityEngine.Debug.Log(position.y);
+                position.x = line.timestamp - time;
 
                 line.transform.position = position;
             }
@@ -99,7 +87,7 @@ namespace RhythmTool.Examples
             lines.Clear();
         }
 
-        private void OnBeat(Beat beat)   //BEATTTT
+        private void OnBeat(Beat beat)
         {
             //Instantiate a line to represent the Beat.
             CreateLine(beat.timestamp, 0, 1, Color.black, 1);
@@ -119,33 +107,27 @@ namespace RhythmTool.Examples
 
             //Instantiate a line to represent the Onset and Chroma feature.
             foreach (Chroma chroma in chromaFeatures)
-            {
-                if(onset.strength>1)
-                {
-                    CreateLine(onset.timestamp, -2 + (float)chroma.note * .1f, 0.3f, Color.blue, onset.strength / 10);
-                }
-            }
+                CreateLine(onset.timestamp, -2 + (float)chroma.note * .1f, .2f, Color.blue, onset.strength / 10);
 
             if (chromaFeatures.Count > 0)
                 lastNote = chromaFeatures[chromaFeatures.Count - 1].note;
 
             //If no Chroma Feature was found, use the last known Chroma feature's note.
             if (chromaFeatures.Count == 0)
-                CreateLine(onset.timestamp, -2 + (float)lastNote * .1f, 0.3f, Color.blue, onset.strength / 10);
+                CreateLine(onset.timestamp, -2 + (float)lastNote * .1f, .2f, Color.blue, onset.strength / 10);
         }
 
-/*        private void OnSegment(Value segment)
+        private void OnSegment(Value segment)
         {
             //Instantiate a line to represent the segment.
             CreateLine(segment.timestamp, -3, 1, Color.green, segment.value / 10);
-        }*/
+        }
 
         private void CreateLine(float timestamp, float position, float scale, Color color, float opacity)
         {
             Line line = Instantiate(linePrefab);
-            line.transform.position = new Vector3(position*10+10, 0, 0); // y value is time, so you can't adjust them into scene position
-                                                                        //            line.transform.localScale = new Vector3(.1f, scale, .01f);
-            line.transform.localScale = new Vector3(0.3f, scale, 0);
+            line.transform.position = new Vector3(0, position, 0);
+            line.transform.localScale = new Vector3(.1f, scale, .01f);
 
             line.Init(color, opacity, timestamp);
 

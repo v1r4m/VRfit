@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using SocketIOClient;
 using System.Diagnostics;
+using TMPro;
 
 public class hrscript : MonoBehaviour
     {
@@ -13,10 +14,11 @@ public class hrscript : MonoBehaviour
     private float dataint;
     private int datashow;
     List<string> buffer = new List<string>();
+    public bool hrOverride = false;
+    public float hrOverrideValue = 100;
     // Start is called before the first frame update
     //        string url = "http://127.0.0.1:999/";
     //       public static Client Socket { get; private set; }
-    public Text txt;
 
         /*        void Awake()
                 {
@@ -50,23 +52,25 @@ public class hrscript : MonoBehaviour
                     {
                         Debug.Log(data.Json.args[0]);
                     });*/
-        txt = GameObject.Find("HRtext").GetComponent<Text>();
-        SocketManager.Socket.On("hra", (data) =>
-                    {
-                        UnityEngine.Debug.Log(data.Json.args[0]);
+            
+                SocketManager.Socket.On("hr", (data) =>
+                {
+                    if (hrOverride) return;
+                    //UnityEngine.Debug.Log("hr raw: " + data.Json.args[0]);
 //                        txt.text = "heart rate changed: " + data.Json.args[0];
-                        datastring = data.Json.args[0].ToString();
-                        datashow = (Convert.ToInt32(datastring));
-                        dataint = (Convert.ToInt32(datastring)-35);
-                        thres = dataint/500;
-//                        UnityEngine.Debug.Log(thres);
-                        RhythmTool.Examples.Visualizer.hr = Convert.ToSingle(0.06 + thres);
-                    });
+                    datastring = data.Json.args[0].ToString();
+                    datashow = (Convert.ToInt32(datastring));
+                    dataint = (Convert.ToInt32(datastring));
+                    thres = dataint;
+                    //UnityEngine.Debug.Log("hr: " + thres);
+                    NoteSpawner.hr = Convert.ToSingle(thres);
+                });
                     
     }
     void Update()
     {
-        txt.text = "heart rate changed: "+datashow;
+        if (hrOverride)
+            NoteSpawner.hr = hrOverrideValue;
     }
 
     // Update is called once per frame
